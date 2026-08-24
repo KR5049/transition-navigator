@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Next Step Navigator — Rough Prototype</title>
+  <style>
+    body {font-family: Arial, sans-serif; max-width: 760px; margin: 40px auto; padding: 0 20px; line-height: 1.5;}
+    .muted {color:#555;}
+    .card {border:1px solid #ccc; border-radius:12px; padding:20px; margin:18px 0;}
+    button {padding:10px 14px; margin:6px 6px 0 0; border-radius:8px; border:1px solid #777; background:#fff; cursor:pointer;}
+    button:hover {background:#f2f2f2;}
+    .hidden {display:none;}
+    .tag {display:inline-block; border:1px solid #aaa; border-radius:999px; padding:4px 9px; margin:3px;}
+    .result {border-left:4px solid #777; padding-left:14px; margin:18px 0;}
+    h1,h2 {line-height:1.2;}
+  </style>
+</head>
+<body>
+  <h1>Next Step Navigator</h1>
+  <p class="muted">A rough prototype for autistic young adults navigating the transition out of high school. No diagnosis documents required.</p>
+
+  <div id="step1" class="card">
+    <h2>1. Where are you right now?</h2>
+    <button onclick="chooseContext('college')">Starting / attending college</button>
+    <button onclick="chooseContext('work')">Starting / working a job</button>
+    <button onclick="chooseContext('unsure')">I'm not sure yet</button>
+  </div>
+
+  <div id="step2" class="card hidden">
+    <h2>2. What feels hardest right now?</h2>
+    <p class="muted">Choose the closest fit. You can change it later.</p>
+    <button onclick="chooseNeed('workload')">Keeping up with workload</button>
+    <button onclick="chooseNeed('sensory')">Sensory overload</button>
+    <button onclick="chooseNeed('communication')">Explaining what I need</button>
+    <button onclick="chooseNeed('daily')">Daily-life organization</button>
+    <button onclick="chooseNeed('social')">Social / unwritten rules</button>
+    <button onclick="chooseNeed('unknown')">I don't know what I need</button>
+  </div>
+
+  <div id="step3" class="card hidden">
+    <h2>3. What would help most?</h2>
+    <button onclick="showPlan('script')">A script for what to say</button>
+    <button onclick="showPlan('resource')">Who to contact / where to look</button>
+    <button onclick="showPlan('plan')">A short step-by-step plan</button>
+    <button onclick="showPlan('unknown')">Help me figure that out</button>
+  </div>
+
+  <div id="results" class="card hidden">
+    <h2>Your next steps</h2>
+    <div id="summary"></div>
+    <div id="plan"></div>
+    <hr>
+    <p class="muted"><strong>Prototype note:</strong> In a real version, these recommendations would be tailored to the user's school, workplace, location, and preferences. This demo is intentionally minimal.</p>
+    <button onclick="restart()">Start over</button>
+  </div>
+
+<script>
+let context="", need="", help="";
+
+function chooseContext(c){
+  context=c;
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('step2').scrollIntoView({behavior:'smooth'});
+}
+function chooseNeed(n){
+  need=n;
+  document.getElementById('step3').classList.remove('hidden');
+  document.getElementById('step3').scrollIntoView({behavior:'smooth'});
+}
+function showPlan(h){
+  help=h;
+  const ctx = context==='college' ? 'college' : context==='work' ? 'work' : 'your next step';
+  const needLabel = {
+    workload:'keeping up with workload',
+    sensory:'sensory overload',
+    communication:'explaining what you need',
+    daily:'daily-life organization',
+    social:'social or unwritten rules',
+    unknown:'figuring out what support you need'
+  }[need];
+
+  document.getElementById('summary').innerHTML =
+    `<p><span class="tag">${ctx}</span><span class="tag">${needLabel}</span></p>`;
+
+  let items = [];
+  if(need==='communication'){
+    items = [
+      ["Clarify the need", "Write one sentence describing the situation that is making things harder."],
+      ["Choose the right contact", context==='college' ? "Start with your disability-services office or the staff member responsible for accommodations." : "Start with the person responsible for accommodations, HR, or your direct supervisor—whichever is safest and most appropriate."],
+      ["Use a simple script", "“I’m having difficulty with ___ because ___. A change that may help is ___. What is the best way to request or discuss that?”"]
+    ];
+  } else if(need==='sensory'){
+    items = [
+      ["Map the trigger", "Note the place, time, sound/light/crowding trigger, and what happens afterward."],
+      ["Try one low-effort adjustment", "Examples: quieter location, headphones if allowed, seating change, short recovery break, reduced visual clutter."],
+      ["Escalate if needed", context==='college' ? "If the environment is blocking access to class or exams, ask disability services about formal options." : "If the environment is interfering with work, consider discussing a reasonable environmental adjustment."]
+    ];
+  } else if(need==='workload' || need==='daily'){
+    items = [
+      ["Shrink the scope", "List only the next three obligations, not everything in your life."],
+      ["Identify the bottleneck", "Is the problem remembering, starting, estimating time, switching tasks, or asking for help?"],
+      ["Match support to the bottleneck", "Use reminders for remembering, accountability/body-doubling for starting, and explicit written steps for complex tasks."]
+    ];
+  } else if(need==='social'){
+    items = [
+      ["Name the confusing situation", "Example: office small talk, group projects, professor communication, networking, or roommate expectations."],
+      ["Ask for explicit norms", "When possible, ask concrete questions instead of guessing unwritten expectations."],
+      ["Use a rehearsal", "Write or practice one likely interaction before it happens."]
+    ];
+  } else {
+    items = [
+      ["Start with friction", "Think of one moment from the last week that felt harder than it 'should' have."],
+      ["Describe what happened", "What were you trying to do? Where did you get stuck? What did you do next?"],
+      ["Classify the need", "Was the main issue information, communication, sensory load, executive function, social ambiguity, or access to a service?"]
+    ];
+  }
+
+  const html = items.map((x,i)=>`<div class="result"><strong>${i+1}. ${x[0]}</strong><br>${x[1]}</div>`).join('');
+  document.getElementById('plan').innerHTML = html;
+
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({behavior:'smooth'});
+}
+
+function restart(){
+  context=""; need=""; help="";
+  ['step2','step3','results'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
